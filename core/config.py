@@ -4,7 +4,7 @@ from typing import List, Union
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_SQLITE_PATH = BASE_DIR / "watertrack.db"
 
 
@@ -31,7 +31,9 @@ class Settings(BaseSettings):
     @field_validator("DATABASE_URL", mode="after")
     @classmethod
     def resolve_database_url(cls, v: str) -> str:
-        """Ensure relative SQLite database paths resolve to canonical project root."""
+        """Ensure relative SQLite database paths resolve to canonical project root and handle Render postgres URL."""
+        if v.startswith("postgres://"):
+            v = v.replace("postgres://", "postgresql://", 1)
         if v.startswith("sqlite:///") and not v.startswith("sqlite:////") and not v.startswith("sqlite:///:memory:"):
             rel_path = v.replace("sqlite:///", "", 1).lstrip("./")
             abs_path = (BASE_DIR / rel_path).resolve()

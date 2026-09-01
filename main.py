@@ -1,11 +1,23 @@
 import os
 import sys
+import types
 from pathlib import Path
 
-# Ensure project root is in sys.path
-_PROJECT_ROOT = str(Path(__file__).resolve().parent.parent)
+# Ensure current directory and parent are in sys.path
+_CURRENT_DIR = Path(__file__).resolve().parent
+if str(_CURRENT_DIR) not in sys.path:
+    sys.path.insert(0, str(_CURRENT_DIR))
+
+_PROJECT_ROOT = str(_CURRENT_DIR.parent)
 if _PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, _PROJECT_ROOT)
+    sys.path.append(_PROJECT_ROOT)
+
+# Ensure 'app' package namespace resolves cleanly when running from repository root (Render / Docker)
+if "app" not in sys.modules:
+    _app_pkg = types.ModuleType("app")
+    _app_pkg.__path__ = [str(_CURRENT_DIR)]
+    _app_pkg.__file__ = str(_CURRENT_DIR / "__init__.py")
+    sys.modules["app"] = _app_pkg
 
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
