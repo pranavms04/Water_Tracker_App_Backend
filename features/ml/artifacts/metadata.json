@@ -1,0 +1,76 @@
+{
+  "trained_at": "2026-09-01T11:50:37.885467+00:00",
+  "n_samples": 600,
+  "models": {
+    "hydration_goal": {
+      "type": "GradientBoostingRegressor",
+      "metrics": {
+        "r2_score": 0.9755,
+        "mae_ml": 127.31,
+        "rmse_ml": 163.11
+      },
+      "top_features": [
+        {
+          "feature": "weight_kg",
+          "importance": 0.7349
+        },
+        {
+          "feature": "exercise_duration_min",
+          "importance": 0.1394
+        },
+        {
+          "feature": "daily_steps",
+          "importance": 0.0504
+        },
+        {
+          "feature": "ambient_temp_c",
+          "importance": 0.0374
+        },
+        {
+          "feature": "activity_level_sedentary",
+          "importance": 0.015
+        },
+        {
+          "feature": "activity_level_light",
+          "importance": 0.0089
+        },
+        {
+          "feature": "gender_female",
+          "importance": 0.0035
+        },
+        {
+          "feature": "gender_male",
+          "importance": 0.003
+        }
+      ]
+    },
+    "dehydration_risk": {
+      "type": "GradientBoostingClassifier",
+      "classes": [
+        "high",
+        "low",
+        "moderate"
+      ],
+      "metrics": {
+        "accuracy": 0.9417,
+        "f1_score": 0.9404,
+        "precision": 0.9408,
+        "recall": 0.9417
+      }
+    },
+    "smart_reminder": {
+      "type": "GradientBoostingRegressor",
+      "metrics": {
+        "r2_score": 0.681,
+        "mae_minutes": 13.65
+      }
+    },
+    "intake_forecast": {
+      "type": "RandomForestRegressor",
+      "metrics": {
+        "r2_score": 0.9735,
+        "mae_ml": 207.74
+      }
+    }
+  }
+}
