@@ -189,7 +189,7 @@ DEFAULT_ROOM_TEMP_CELSIUS=22.0
 Start the local development server with auto-reload:
 
 ```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 The API will be live at `http://localhost:8000`.
@@ -366,6 +366,26 @@ docker build -t watertrack-api .
 # Run container
 docker run -d -p 8000:8000 --name watertrack-api watertrack-api
 ```
+
+---
+
+## 🚀 Render Deployment
+
+When deploying to [Render](https://render.com) as a Web Service:
+
+1. **Build Command**:
+   ```bash
+   pip install --upgrade pip && pip install -r requirements.txt
+   ```
+
+2. **Start Command**:
+   ```bash
+   uvicorn main:app --host 0.0.0.0 --port $PORT
+   ```
+   *(or `gunicorn -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT main:app`)*
+
+3. **Environment Variables**:
+   Configure `SECRET_KEY`, `DATABASE_URL` (if using Render PostgreSQL), etc. in the Render Dashboard Environment tab.
 
 ---
 
