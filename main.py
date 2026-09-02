@@ -92,10 +92,14 @@ def create_app() -> FastAPI:
             },
         )
 
-    # Health check / status endpoint
+    # Health check / status endpoints
     @app.get("/", status_code=status.HTTP_200_OK, tags=["General"])
     def read_root() -> dict[str, str]:
         return {"message": "WaterTrack API is running"}
+
+    @app.get("/health", status_code=status.HTTP_200_OK, tags=["Health"])
+    def health_check() -> dict[str, str]:
+        return {"status": "alive"}
 
     # Include routes both at root level (backwards-compatible) and under /api/v1
     app.include_router(api_router)

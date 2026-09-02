@@ -1,5 +1,5 @@
 {
-  "trained_at": "2026-09-01T15:49:19.033336+00:00",
+  "trained_at": "2026-09-02T09:05:59.526442+00:00",
   "n_samples": 600,
   "models": {
     "hydration_goal": {
@@ -16,7 +16,7 @@
         },
         {
           "feature": "exercise_duration_min",
-          "importance": 0.1418
+          "importance": 0.1394
         },
         {
           "feature": "daily_steps",
@@ -28,7 +28,7 @@
         },
         {
           "feature": "activity_level_sedentary",
-          "importance": 0.0126
+          "importance": 0.015
         },
         {
           "feature": "activity_level_light",
@@ -36,7 +36,7 @@
         },
         {
           "feature": "gender_female",
-          "importance": 0.0036
+          "importance": 0.0035
         },
         {
           "feature": "gender_male",
