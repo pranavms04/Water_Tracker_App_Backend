@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
+import math
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -52,6 +53,20 @@ class MLGoalPredictionRequest(BaseModel):
     )
     streak_days: int = Field(default=0, ge=0, le=3650, description="Current consecutive goal streak days")
 
+    @field_validator(
+        "weight_kg",
+        "exercise_duration_min",
+        "caffeine_intake_mg",
+        "ambient_temp_c",
+        "humidity_pct",
+        "past_adherence_rate",
+    )
+    @classmethod
+    def validate_finite_floats(cls, v: float) -> float:
+        if math.isnan(v) or math.isinf(v):
+            raise ValueError("Numeric values must be finite numbers")
+        return v
+
 
 class MLGoalPredictionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -85,6 +100,21 @@ class DehydrationRiskRequest(BaseModel):
         default=1.5, ge=0.0, le=24.0, description="Elapsed hours since the last recorded drink"
     )
     streak_days: int = Field(default=0, ge=0, le=3650)
+
+    @field_validator(
+        "weight_kg",
+        "exercise_duration_min",
+        "ambient_temp_c",
+        "humidity_pct",
+        "intake_so_far_ml",
+        "daily_goal_ml",
+        "hours_since_last_drink",
+    )
+    @classmethod
+    def validate_finite_floats(cls, v: float) -> float:
+        if math.isnan(v) or math.isinf(v):
+            raise ValueError("Numeric values must be finite numbers")
+        return v
 
 
 class DehydrationRiskResponse(BaseModel):
@@ -123,6 +153,13 @@ class SmartReminderScheduleRequest(BaseModel):
     weight_kg: float = Field(default=70.0, gt=20.0, le=300.0)
     ambient_temp_c: float = Field(default=24.0, ge=-25.0, le=60.0)
     activity_level: ActivityLevelEnum = Field(default=ActivityLevelEnum.MODERATE)
+
+    @field_validator("daily_goal_ml", "intake_so_far_ml", "weight_kg", "ambient_temp_c")
+    @classmethod
+    def validate_finite_floats(cls, v: float) -> float:
+        if math.isnan(v) or math.isinf(v):
+            raise ValueError("Numeric values must be finite numbers")
+        return v
 
     @field_validator("start_time", "end_time")
     @classmethod
@@ -167,6 +204,19 @@ class IntakeForecastRequest(BaseModel):
     past_adherence_rate: float = Field(default=0.80, ge=0.0, le=1.0)
     streak_days: int = Field(default=0, ge=0, le=3650)
     activity_level: ActivityLevelEnum = Field(default=ActivityLevelEnum.MODERATE)
+
+    @field_validator(
+        "weight_kg",
+        "ambient_temp_c",
+        "intake_so_far_ml",
+        "daily_goal_ml",
+        "past_adherence_rate",
+    )
+    @classmethod
+    def validate_finite_floats(cls, v: float) -> float:
+        if math.isnan(v) or math.isinf(v):
+            raise ValueError("Numeric values must be finite numbers")
+        return v
 
 
 class HourlyTrajectoryPoint(BaseModel):

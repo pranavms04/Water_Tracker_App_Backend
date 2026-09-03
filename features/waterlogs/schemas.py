@@ -1,6 +1,7 @@
 """Pydantic schemas for water logs."""
 
 from datetime import datetime, timedelta, timezone
+import math
 from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -47,6 +48,8 @@ class WaterLogCreate(BaseModel):
     @field_validator("amount_ml")
     @classmethod
     def round_amount(cls, v: float) -> float:
+        if math.isnan(v) or math.isinf(v):
+            raise ValueError("amount_ml must be a valid finite number")
         return round(v, 1)
 
     @field_validator("logged_at")
@@ -57,6 +60,9 @@ class WaterLogCreate(BaseModel):
             v_utc = v if v.tzinfo else v.replace(tzinfo=timezone.utc)
             if v_utc > now_utc + timedelta(minutes=5):
                 raise ValueError("logged_at timestamp cannot be in the future")
+            if v_utc < datetime(2000, 1, 1, tzinfo=timezone.utc):
+                raise ValueError("logged_at timestamp is too far in the past")
+            return v_utc
         return v
 
 
@@ -66,6 +72,8 @@ class WaterLogUpdate(BaseModel):
     @field_validator("amount_ml")
     @classmethod
     def round_amount(cls, v: float) -> float:
+        if math.isnan(v) or math.isinf(v):
+            raise ValueError("amount_ml must be a valid finite number")
         return round(v, 1)
 
 

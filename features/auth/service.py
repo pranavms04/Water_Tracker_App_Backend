@@ -19,7 +19,8 @@ class AuthService:
     @staticmethod
     def register_user(db: Session, user_in: UserCreate) -> User:
         """Register new user, initialize settings and reminders in a single transaction."""
-        existing = UserRepository.get_by_email(db, user_in.email)
+        normalized_email = user_in.email.strip().lower()
+        existing = UserRepository.get_by_email(db, normalized_email)
         if existing:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -38,7 +39,7 @@ class AuthService:
 
             new_user = User(
                 user_uuid=str(uuid.uuid4()),
-                email=user_in.email,
+                email=normalized_email,
                 hashed_password=hash_password(user_in.password),
                 full_name=user_in.full_name,
                 weight_kg=user_in.weight_kg,
@@ -81,7 +82,8 @@ class AuthService:
     @staticmethod
     def authenticate_user(db: Session, credentials: UserLogin) -> LoginResponse:
         """Verify user credentials and issue signed JWT."""
-        user = UserRepository.get_by_email(db, credentials.email)
+        normalized_email = credentials.email.strip().lower()
+        user = UserRepository.get_by_email(db, normalized_email)
         if not user or not verify_password(
             credentials.password, user.hashed_password
         ):

@@ -1,6 +1,7 @@
 """User service business logic layer."""
 
 from fastapi import HTTPException, status
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.features.users.models import User
@@ -58,4 +59,11 @@ class UserService:
         if user_update.activity_level is not None:
             user.activity_level = user_update.activity_level.value
 
-        return UserRepository.update(db, user)
+        try:
+            return UserRepository.update(db, user)
+        except SQLAlchemyError as exc:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update user profile.",
+            ) from exc

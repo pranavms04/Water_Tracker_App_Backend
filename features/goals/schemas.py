@@ -1,8 +1,9 @@
 """Pydantic schemas for goals and hydration recommendations."""
 
+import math
 from enum import Enum
 from typing import Any, Dict, Literal, Optional
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class ClimateEnum(str, Enum):
@@ -19,6 +20,13 @@ class GoalUpdate(BaseModel):
         le=10000.0,
         description="Target daily water intake in milliliters (500 to 10,000 ml)",
     )
+
+    @field_validator("daily_goal_ml")
+    @classmethod
+    def validate_goal(cls, v: float) -> float:
+        if math.isnan(v) or math.isinf(v):
+            raise ValueError("daily_goal_ml must be a valid finite number")
+        return v
 
 
 class GoalResponse(BaseModel):

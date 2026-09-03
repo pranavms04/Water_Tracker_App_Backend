@@ -1,6 +1,6 @@
 """WaterLog business logic service."""
 
-from datetime import date
+from datetime import date, datetime, timezone
 from typing import List, Optional
 from fastapi import HTTPException, status
 from sqlalchemy.exc import SQLAlchemyError
@@ -111,11 +111,13 @@ class WaterLogService:
         """Compute today's hydration intake vs target goal."""
         goal_settings = SettingsRepository.get_or_create(db, user_id)
         goal = goal_settings.daily_goal_ml
-        today = date.today()
+        today = datetime.now(timezone.utc).date()
 
         logs = WaterLogRepository.get_all_by_user(db, user_id)
         total_today = sum(
-            log.amount_ml for log in logs if log.logged_at.date() == today
+            log.amount_ml
+            for log in logs
+            if (log.logged_at.date() if hasattr(log.logged_at, "date") else log.logged_at) == today
         )
 
         remaining = max(goal - total_today, 0.0)

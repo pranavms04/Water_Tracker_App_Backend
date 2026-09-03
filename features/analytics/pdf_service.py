@@ -32,7 +32,7 @@ class PDFReportService:
     ) -> io.BytesIO:
         """Generates a styled, multi-section PDF hydration summary report."""
         # Default to the last 30 days if date range not specified
-        today = date.today()
+        today = datetime.now(timezone.utc).date()
         if end_date is None:
             end_date = today
         if start_date is None:

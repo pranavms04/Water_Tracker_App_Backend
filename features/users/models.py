@@ -19,7 +19,12 @@ class User(Base):
         nullable=False,
         default=lambda: str(uuid.uuid4()),
     )
-    email = Column(String, unique=True, index=True, nullable=False)
+    email = Column(
+        String(255, collation="NOCASE"),
+        unique=True,
+        index=True,
+        nullable=False,
+    )
     hashed_password = Column(String, nullable=False)
     full_name = Column(String(100), nullable=False)
     weight_kg = Column(Float, nullable=True)

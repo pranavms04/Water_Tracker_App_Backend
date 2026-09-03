@@ -1,6 +1,6 @@
 """Analytics and streak calculation service with true calendar continuity."""
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Any, Dict
 import pandas as pd
 from sqlalchemy.orm import Session
@@ -36,8 +36,10 @@ class AnalyticsService:
 
         # Build calendar continuity for streak calculation
         min_date = min(daily_totals.keys())
-        today = date.today()
-        total_days = (today - min_date).days + 1
+        today = datetime.now(timezone.utc).date()
+        if min_date > today:
+            min_date = today
+        total_days = max((today - min_date).days + 1, 1)
 
         calendar_dates = [min_date + timedelta(days=i) for i in range(total_days)]
         daily_goal_met = {d: daily_totals.get(d, 0.0) >= goal for d in calendar_dates}
@@ -79,7 +81,7 @@ class AnalyticsService:
     def get_weekly_trend(db: Session, user_id: int) -> Dict[str, float]:
         """Calculates 7-day water consumption trend with zero-fill for days without logs."""
         logs = WaterLogRepository.get_all_by_user(db, user_id)
-        today = date.today()
+        today = datetime.now(timezone.utc).date()
         last_7_days = [today - timedelta(days=i) for i in range(6, -1, -1)]
 
         if not logs:

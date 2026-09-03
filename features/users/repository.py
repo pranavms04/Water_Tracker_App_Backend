@@ -1,6 +1,7 @@
 """User repository data access layer."""
 
 from typing import Optional
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.features.users.models import User
 
@@ -18,8 +19,15 @@ class UserRepository:
 
     @staticmethod
     def get_by_email(db: Session, email: str) -> Optional[User]:
-        """Fetch user by email address."""
-        return db.query(User).filter(User.email == email).first()
+        """Fetch user by email address (case-insensitive and trimmed)."""
+        if not email:
+            return None
+        normalized = email.strip().lower()
+        return (
+            db.query(User)
+            .filter(func.lower(User.email) == normalized)
+            .first()
+        )
 
     @staticmethod
     def create(db: Session, user: User) -> User:

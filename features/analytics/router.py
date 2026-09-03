@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timezone
 from typing import Any, Dict, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
@@ -71,7 +71,7 @@ def download_intake_report_pdf(
         end_date=end_date,
     )
     
-    effective_end = end_date or date.today()
+    effective_end = end_date or datetime.now(timezone.utc).date()
     filename = f"watertrack_summary_{effective_end.isoformat()}.pdf"
 
     return StreamingResponse(

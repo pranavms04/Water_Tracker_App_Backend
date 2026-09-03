@@ -23,11 +23,18 @@ class GoalService:
     @staticmethod
     def get_goal(db: Session, user_id: int) -> GoalResponse:
         """Fetch current user's daily and weekly goal."""
-        settings = SettingsRepository.get_or_create(db, user_id)
-        return GoalResponse(
-            daily_goal_ml=settings.daily_goal_ml,
-            weekly_goal_ml=settings.daily_goal_ml * 7,
-        )
+        try:
+            settings = SettingsRepository.get_or_create(db, user_id)
+            return GoalResponse(
+                daily_goal_ml=settings.daily_goal_ml,
+                weekly_goal_ml=settings.daily_goal_ml * 7,
+            )
+        except SQLAlchemyError as exc:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to retrieve goal.",
+            ) from exc
 
     @staticmethod
     def update_goal(
@@ -59,8 +66,12 @@ class GoalService:
         """Calculates personalized hydration recommendation with safety bounds."""
         base_ml = weight_kg * app_settings.BASE_ML_PER_KG
 
+        gender_clean = gender.strip().lower() if isinstance(gender, str) else "other"
+        activity_clean = activity_level.strip().lower() if isinstance(activity_level, str) else "moderate"
+        climate_clean = climate.strip().lower() if isinstance(climate, str) else "temperate"
+
         gender_adj = (
-            200.0 if gender == "male" else (-100.0 if gender == "female" else 0.0)
+            200.0 if gender_clean == "male" else (-100.0 if gender_clean == "female" else 0.0)
         )
 
         activity_map = {
@@ -69,7 +80,7 @@ class GoalService:
             "moderate": 600.0,
             "very_active": 1000.0,
         }
-        activity_adj = activity_map.get(activity_level, 300.0)
+        activity_adj = activity_map.get(activity_clean, 300.0)
 
         climate_map = {
             "cold": -100.0,
@@ -77,7 +88,7 @@ class GoalService:
             "hot": 400.0,
             "very_hot": 750.0,
         }
-        climate_adj = climate_map.get(climate, 0.0)
+        climate_adj = climate_map.get(climate_clean, 0.0)
 
         raw_daily = base_ml + gender_adj + activity_adj + climate_adj
         min_safe = round(
@@ -160,8 +171,11 @@ class GoalService:
         """Calculates personalized hydration recommendation adjusted for live ambient temperature."""
         base_ml = weight_kg * app_settings.BASE_ML_PER_KG
 
+        gender_clean = gender.strip().lower() if isinstance(gender, str) else "other"
+        activity_clean = activity_level.strip().lower() if isinstance(activity_level, str) else "moderate"
+
         gender_adj = (
-            200.0 if gender == "male" else (-100.0 if gender == "female" else 0.0)
+            200.0 if gender_clean == "male" else (-100.0 if gender_clean == "female" else 0.0)
         )
 
         activity_map = {
@@ -170,7 +184,7 @@ class GoalService:
             "moderate": 600.0,
             "very_active": 1000.0,
         }
-        activity_adj = activity_map.get(activity_level, 300.0)
+        activity_adj = activity_map.get(activity_clean, 300.0)
 
         temp_adj, temp_category = GoalService.calculate_temp_water_adjustment(
             temp_celsius
